@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0f172a">
-  <title>Day Quality Score</title>
+  <title>Day Quality</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -773,7 +773,7 @@
     
     <!-- Auth Screen -->
     <div id="authScreen" class="auth-screen" style="display: none;">
-      <h1>Day Quality Score</h1>
+      <h1>Day Quality</h1>
       <p>Track habits. Build streaks. Improve daily.</p>
       
       <div id="authMethods">
@@ -827,7 +827,7 @@
     <!-- Main App -->
     <div id="mainApp" style="display: none;">
       <div class="header">
-        <h1>Day Quality Score</h1>
+        <h1>Day Quality</h1>
         <p class="date" id="currentDate"></p>
       </div>
       
@@ -1163,7 +1163,7 @@
       ring.style.setProperty('--ring-color', info.color);
       ring.style.setProperty('--progress', `${progress}%`);
       
-      document.getElementById('footer').textContent = `Score range: ${minScore} to +${maxScore} pts`;
+      document.getElementById('footer').textContent = '';
     };
     
     const renderHabitRow = (habit, forEdit = false) => {
@@ -1297,10 +1297,16 @@
       // Chart data (reverse to show oldest first)
       const data = [...history].reverse().slice(-14); // Last 14 days
       
-      // Calculate bounds
-      const maxScore = habits.filter(h => h.points > 0).reduce((s, h) => s + h.points, 0);
-      const minScore = habits.filter(h => h.points < 0).reduce((s, h) => s + h.points, 0);
-      const scoreRange = maxScore - minScore || 1;
+      // Calculate bounds based on actual scores, but always include 0
+      const scores = data.map(d => d.score);
+      const dataMax = Math.max(...scores, 0);
+      const dataMin = Math.min(...scores, 0);
+      
+      // Add 10% padding above and below
+      const paddingAmount = Math.max((dataMax - dataMin) * 0.1, 5);
+      const chartMax = dataMax + paddingAmount;
+      const chartMin = dataMin - paddingAmount;
+      const scoreRange = chartMax - chartMin;
       
       // Chart dimensions
       const padding = { top: 20, right: 20, bottom: 50, left: 45 };
@@ -1309,18 +1315,29 @@
       
       // Helper to convert score to Y position
       const scoreToY = (score) => {
-        const normalized = (score - minScore) / scoreRange;
+        const normalized = (score - chartMin) / scoreRange;
         return padding.top + chartHeight - (normalized * chartHeight);
       };
       
-      // Draw grid lines at key values
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.lineWidth = 1;
+      // Calculate nice grid intervals
+      const gridLines = [];
+      const interval = Math.ceil(scoreRange / 5 / 5) * 5 || 5; // Round to nearest 5
+      let gridValue = Math.floor(chartMin / interval) * interval;
+      while (gridValue <= chartMax) {
+        if (gridValue >= chartMin && gridValue <= chartMax) {
+          gridLines.push(gridValue);
+        }
+        gridValue += interval;
+      }
       
-      // Draw lines at min, 0, and max
-      const gridScores = [minScore, 0, maxScore];
-      gridScores.forEach(score => {
-        if (score < minScore || score > maxScore) return;
+      // Always include 0 if not already there
+      if (!gridLines.includes(0) && chartMin <= 0 && chartMax >= 0) {
+        gridLines.push(0);
+        gridLines.sort((a, b) => b - a);
+      }
+      
+      // Draw grid lines
+      gridLines.forEach(score => {
         const y = scoreToY(score);
         ctx.beginPath();
         ctx.moveTo(padding.left, y);
@@ -1328,7 +1345,7 @@
         
         // Make zero line more prominent
         if (score === 0) {
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
           ctx.lineWidth = 2;
         } else {
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
