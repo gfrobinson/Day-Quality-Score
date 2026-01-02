@@ -242,6 +242,37 @@
       text-align: center;
     }
     
+    .reorder-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-right: 12px;
+    }
+    
+    .reorder-btn {
+      width: 24px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .reorder-btn:active {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .reorder-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    
     .habit-name {
       font-size: 15px;
       font-weight: 500;
@@ -599,6 +630,116 @@
     .sync-indicator.syncing { color: #eab308; }
     .sync-indicator.synced { color: #10b981; }
     
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      margin: 24px 0;
+      width: 100%;
+      max-width: 300px;
+    }
+    
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .auth-divider span {
+      padding: 0 16px;
+      color: #64748b;
+      font-size: 13px;
+    }
+    
+    .auth-tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 16px;
+      width: 100%;
+      max-width: 300px;
+    }
+    
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #94a3b8;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .auth-tab.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    
+    .auth-form {
+      width: 100%;
+      max-width: 300px;
+    }
+    
+    .auth-form .input-field {
+      margin-bottom: 0;
+    }
+    
+    .auth-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    
+    .auth-buttons .primary-btn {
+      margin-top: 0;
+      padding: 14px 20px;
+    }
+    
+    .secondary-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 14px 20px;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .secondary-btn:active {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .text-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 12px;
+      width: 100%;
+      text-align: center;
+      transition: color 0.2s ease;
+    }
+    
+    .text-btn:hover {
+      color: #94a3b8;
+    }
+    
+    #phoneAuth .primary-btn {
+      margin-top: 12px;
+    }
+    
     .chart-legend {
       display: flex;
       flex-wrap: wrap;
@@ -634,15 +775,53 @@
     <div id="authScreen" class="auth-screen" style="display: none;">
       <h1>Day Quality</h1>
       <p>Track habits. Build streaks. Improve daily.</p>
-      <button class="google-btn" id="googleSignIn">
-        <svg viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Sign in with Google
-      </button>
+      
+      <div id="authMethods">
+        <button class="google-btn" id="googleSignIn">
+          <svg viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Sign in with Google
+        </button>
+        
+        <div class="auth-divider">
+          <span>or</span>
+        </div>
+        
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-auth="email">Email</button>
+          <button class="auth-tab" data-auth="phone">Phone</button>
+        </div>
+        
+        <!-- Email Auth -->
+        <div id="emailAuth" class="auth-form">
+          <input type="email" class="input-field" id="emailInput" placeholder="Email address">
+          <input type="password" class="input-field" id="passwordInput" placeholder="Password" style="margin-top: 10px;">
+          <div class="auth-buttons">
+            <button class="primary-btn" id="emailSignIn" style="flex: 1;">Sign In</button>
+            <button class="secondary-btn" id="emailSignUp" style="flex: 1;">Sign Up</button>
+          </div>
+          <button class="text-btn" id="forgotPassword">Forgot password?</button>
+        </div>
+        
+        <!-- Phone Auth -->
+        <div id="phoneAuth" class="auth-form" style="display: none;">
+          <div id="phoneInputContainer">
+            <input type="tel" class="input-field" id="phoneInput" placeholder="Phone number (e.g. +1 555 123 4567)">
+            <button class="primary-btn" id="sendCode">Send Verification Code</button>
+          </div>
+          <div id="verifyCodeContainer" style="display: none;">
+            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 12px; text-align: center;">Enter the 6-digit code sent to your phone</p>
+            <input type="text" class="input-field" id="verificationCode" placeholder="123456" maxlength="6" style="text-align: center; font-size: 24px; letter-spacing: 8px;">
+            <button class="primary-btn" id="verifyCode">Verify Code</button>
+            <button class="text-btn" id="changePhone">Use different number</button>
+          </div>
+          <div id="recaptcha-container"></div>
+        </div>
+      </div>
     </div>
     
     <!-- Main App -->
@@ -1007,8 +1186,18 @@
       }
       
       if (forEdit) {
+        const habitIndex = habits.findIndex(h => h.id === habit.id);
+        const sameTypeHabits = habits.filter(h => (h.points > 0) === (habit.points > 0));
+        const indexInType = sameTypeHabits.findIndex(h => h.id === habit.id);
+        const isFirst = indexInType === 0;
+        const isLast = indexInType === sameTypeHabits.length - 1;
+        
         return `
           <div class="habit-row" style="cursor: default;">
+            <div class="reorder-controls">
+              <button class="reorder-btn" onclick="moveHabitUp(${habit.id})" ${isFirst ? 'disabled' : ''}>▲</button>
+              <button class="reorder-btn" onclick="moveHabitDown(${habit.id})" ${isLast ? 'disabled' : ''}>▼</button>
+            </div>
             <span class="habit-name">${habit.name}</span>
             <span class="points-badge ${isNegative ? 'negative' : 'positive'}">${isNegative ? '' : '+'}${habit.points}</span>
             <button class="edit-btn" onclick="startEditHabit(${habit.id})">✎</button>
@@ -1114,28 +1303,45 @@
       const scoreRange = maxScore - minScore || 1;
       
       // Chart dimensions
-      const padding = { top: 20, right: 20, bottom: 40, left: 45 };
+      const padding = { top: 20, right: 20, bottom: 50, left: 45 };
       const chartWidth = width - padding.left - padding.right;
       const chartHeight = height - padding.top - padding.bottom;
       
-      // Draw grid lines
+      // Helper to convert score to Y position
+      const scoreToY = (score) => {
+        const normalized = (score - minScore) / scoreRange;
+        return padding.top + chartHeight - (normalized * chartHeight);
+      };
+      
+      // Draw grid lines at key values
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
       ctx.lineWidth = 1;
       
-      for (let i = 0; i <= 4; i++) {
-        const y = padding.top + (chartHeight / 4) * i;
+      // Draw lines at min, 0, and max
+      const gridScores = [minScore, 0, maxScore];
+      gridScores.forEach(score => {
+        if (score < minScore || score > maxScore) return;
+        const y = scoreToY(score);
         ctx.beginPath();
         ctx.moveTo(padding.left, y);
         ctx.lineTo(width - padding.right, y);
+        
+        // Make zero line more prominent
+        if (score === 0) {
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.lineWidth = 2;
+        } else {
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+          ctx.lineWidth = 1;
+        }
         ctx.stroke();
         
         // Y-axis labels
-        const scoreLabel = Math.round(maxScore - (scoreRange / 4) * i);
-        ctx.fillStyle = '#64748b';
-        ctx.font = '11px Outfit';
+        ctx.fillStyle = score === 0 ? '#fff' : '#64748b';
+        ctx.font = score === 0 ? 'bold 12px Outfit' : '11px Outfit';
         ctx.textAlign = 'right';
-        ctx.fillText(scoreLabel, padding.left - 8, y + 4);
-      }
+        ctx.fillText(score, padding.left - 8, y + 4);
+      });
       
       // Draw data points and line
       if (data.length > 0) {
@@ -1148,8 +1354,7 @@
         
         data.forEach((day, i) => {
           const x = padding.left + (i * pointSpacing);
-          const normalizedScore = (day.score - minScore) / scoreRange;
-          const y = padding.top + chartHeight - (normalizedScore * chartHeight);
+          const y = scoreToY(day.score);
           
           if (i === 0) {
             ctx.moveTo(x, y);
@@ -1159,11 +1364,10 @@
         });
         ctx.stroke();
         
-        // Draw points
+        // Draw points and labels
         data.forEach((day, i) => {
           const x = padding.left + (i * pointSpacing);
-          const normalizedScore = (day.score - minScore) / scoreRange;
-          const y = padding.top + chartHeight - (normalizedScore * chartHeight);
+          const y = scoreToY(day.score);
           const info = getScoreInfo(day.score);
           
           // Point
@@ -1172,12 +1376,28 @@
           ctx.fillStyle = info.color;
           ctx.fill();
           
-          // X-axis label (date)
-          ctx.fillStyle = '#64748b';
+          // X-axis date label (show month/day)
+          ctx.fillStyle = '#94a3b8';
           ctx.font = '10px Outfit';
           ctx.textAlign = 'center';
-          const dateLabel = day.displayDate.split(', ')[0].split(' ')[1] || day.date.slice(-2);
-          ctx.fillText(dateLabel, x, height - padding.bottom + 20);
+          
+          // Parse date and format as M/D
+          const dateParts = day.date.split('-');
+          const month = parseInt(dateParts[1]);
+          const dayNum = parseInt(dateParts[2]);
+          const dateLabel = `${month}/${dayNum}`;
+          
+          // Rotate labels if many data points
+          if (data.length > 7) {
+            ctx.save();
+            ctx.translate(x, height - padding.bottom + 12);
+            ctx.rotate(-45 * Math.PI / 180);
+            ctx.textAlign = 'right';
+            ctx.fillText(dateLabel, 0, 0);
+            ctx.restore();
+          } else {
+            ctx.fillText(dateLabel, x, height - padding.bottom + 16);
+          }
         });
       }
     };
@@ -1326,6 +1546,48 @@
       renderHabitsView();
     };
     
+    window.moveHabitUp = async (id) => {
+      const habit = habits.find(h => h.id === id);
+      const isPositive = habit.points > 0;
+      const sameTypeHabits = habits.filter(h => (h.points > 0) === isPositive);
+      const indexInType = sameTypeHabits.findIndex(h => h.id === id);
+      
+      if (indexInType > 0) {
+        // Find the actual indices in the main habits array
+        const currentIndex = habits.findIndex(h => h.id === id);
+        const prevHabitId = sameTypeHabits[indexInType - 1].id;
+        const prevIndex = habits.findIndex(h => h.id === prevHabitId);
+        
+        // Swap
+        [habits[currentIndex], habits[prevIndex]] = [habits[prevIndex], habits[currentIndex]];
+        
+        renderHabitsView();
+        renderTodayView();
+        await saveHabits();
+      }
+    };
+    
+    window.moveHabitDown = async (id) => {
+      const habit = habits.find(h => h.id === id);
+      const isPositive = habit.points > 0;
+      const sameTypeHabits = habits.filter(h => (h.points > 0) === isPositive);
+      const indexInType = sameTypeHabits.findIndex(h => h.id === id);
+      
+      if (indexInType < sameTypeHabits.length - 1) {
+        // Find the actual indices in the main habits array
+        const currentIndex = habits.findIndex(h => h.id === id);
+        const nextHabitId = sameTypeHabits[indexInType + 1].id;
+        const nextIndex = habits.findIndex(h => h.id === nextHabitId);
+        
+        // Swap
+        [habits[currentIndex], habits[nextIndex]] = [habits[nextIndex], habits[currentIndex]];
+        
+        renderHabitsView();
+        renderTodayView();
+        await saveHabits();
+      }
+    };
+    
     window.saveHabitEdit = async (id, isNegative) => {
       const name = document.getElementById(`editName${id}`).value.trim();
       const points = parseInt(document.getElementById(`editPoints${id}`).value) || 1;
@@ -1431,7 +1693,7 @@
     
     document.getElementById('savePastDay').addEventListener('click', savePastDayScore);
     
-    // Auth
+    // Auth - Google
     document.getElementById('googleSignIn').addEventListener('click', async () => {
       const provider = new firebase.auth.GoogleAuthProvider();
       try {
@@ -1440,6 +1702,155 @@
         console.error('Sign in error:', error);
         showToast('Sign in failed');
       }
+    });
+    
+    // Auth - Tab switching
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        const authType = tab.dataset.auth;
+        document.getElementById('emailAuth').style.display = authType === 'email' ? 'block' : 'none';
+        document.getElementById('phoneAuth').style.display = authType === 'phone' ? 'block' : 'none';
+      });
+    });
+    
+    // Auth - Email Sign In
+    document.getElementById('emailSignIn').addEventListener('click', async () => {
+      const email = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+      
+      if (!email || !password) {
+        showToast('Enter email and password');
+        return;
+      }
+      
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+      } catch (error) {
+        console.error('Sign in error:', error);
+        if (error.code === 'auth/user-not-found') {
+          showToast('No account found. Sign up first.');
+        } else if (error.code === 'auth/wrong-password') {
+          showToast('Incorrect password');
+        } else {
+          showToast('Sign in failed');
+        }
+      }
+    });
+    
+    // Auth - Email Sign Up
+    document.getElementById('emailSignUp').addEventListener('click', async () => {
+      const email = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+      
+      if (!email || !password) {
+        showToast('Enter email and password');
+        return;
+      }
+      
+      if (password.length < 6) {
+        showToast('Password must be at least 6 characters');
+        return;
+      }
+      
+      try {
+        await auth.createUserWithEmailAndPassword(email, password);
+        showToast('Account created!');
+      } catch (error) {
+        console.error('Sign up error:', error);
+        if (error.code === 'auth/email-already-in-use') {
+          showToast('Email already in use. Sign in instead.');
+        } else if (error.code === 'auth/invalid-email') {
+          showToast('Invalid email address');
+        } else {
+          showToast('Sign up failed');
+        }
+      }
+    });
+    
+    // Auth - Forgot Password
+    document.getElementById('forgotPassword').addEventListener('click', async () => {
+      const email = document.getElementById('emailInput').value.trim();
+      
+      if (!email) {
+        showToast('Enter your email first');
+        return;
+      }
+      
+      try {
+        await auth.sendPasswordResetEmail(email);
+        showToast('Password reset email sent!');
+      } catch (error) {
+        console.error('Reset error:', error);
+        showToast('Could not send reset email');
+      }
+    });
+    
+    // Auth - Phone
+    let confirmationResult = null;
+    let recaptchaVerifier = null;
+    
+    const setupRecaptcha = () => {
+      if (!recaptchaVerifier) {
+        recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+          size: 'invisible',
+          callback: () => {}
+        });
+      }
+    };
+    
+    document.getElementById('sendCode').addEventListener('click', async () => {
+      const phone = document.getElementById('phoneInput').value.trim();
+      
+      if (!phone) {
+        showToast('Enter phone number');
+        return;
+      }
+      
+      try {
+        setupRecaptcha();
+        confirmationResult = await auth.signInWithPhoneNumber(phone, recaptchaVerifier);
+        document.getElementById('phoneInputContainer').style.display = 'none';
+        document.getElementById('verifyCodeContainer').style.display = 'block';
+        showToast('Code sent!');
+      } catch (error) {
+        console.error('Phone auth error:', error);
+        if (error.code === 'auth/invalid-phone-number') {
+          showToast('Invalid phone number format');
+        } else {
+          showToast('Could not send code');
+        }
+        // Reset recaptcha on error
+        if (recaptchaVerifier) {
+          recaptchaVerifier.clear();
+          recaptchaVerifier = null;
+        }
+      }
+    });
+    
+    document.getElementById('verifyCode').addEventListener('click', async () => {
+      const code = document.getElementById('verificationCode').value.trim();
+      
+      if (!code || code.length !== 6) {
+        showToast('Enter 6-digit code');
+        return;
+      }
+      
+      try {
+        await confirmationResult.confirm(code);
+      } catch (error) {
+        console.error('Verification error:', error);
+        showToast('Invalid code');
+      }
+    });
+    
+    document.getElementById('changePhone').addEventListener('click', () => {
+      document.getElementById('phoneInputContainer').style.display = 'block';
+      document.getElementById('verifyCodeContainer').style.display = 'none';
+      document.getElementById('verificationCode').value = '';
+      confirmationResult = null;
     });
     
     document.getElementById('signOut').addEventListener('click', async () => {
