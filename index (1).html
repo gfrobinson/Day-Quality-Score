@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f172a">
+  <title>Day Quality</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      font-family: 'Outfit', -apple-system, sans-serif;
+      color: #e2e8f0;
+      padding: 20px;
+      padding-top: env(safe-area-inset-top, 20px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 20px);
+    }
+    
+    .container {
+      max-width: 440px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 4px;
+      background: linear-gradient(135deg, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .header .date {
+      color: #64748b;
+      font-size: 14px;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+    }
+    
+    .nav {
+      display: flex;
+      padding: 6px;
+      margin-bottom: 24px;
+    }
+    
+    .nav-btn {
+      flex: 1;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-btn.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    
+    .view { display: none; }
+    .view.active { display: block; }
+    
+    .score-card {
+      padding: 32px 24px;
+      margin-bottom: 20px;
+    }
+    
+    .score-ring {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin: 0 auto 24px;
+    }
+    
+    .score-ring::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      padding: 6px;
+      background: conic-gradient(from 180deg, var(--ring-color) var(--progress), rgba(255,255,255,0.1) var(--progress));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+    
+    .score-grade {
+      font-family: 'Space Mono', monospace;
+      font-size: 48px;
+      font-weight: 700;
+    }
+    
+    .score-points {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    
+    .score-label {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 24px 0 12px;
+    }
+    
+    .section-title.positive { color: #34d399; }
+    .section-title.negative { color: #f87171; }
+    
+    .habit-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      margin: 8px 0;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .habit-row:hover, .habit-row:active {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .habit-row.checked {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    
+    .habit-row.checked.negative {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .checkbox {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      margin-right: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    
+    .checkbox.checked {
+      background: #10b981;
+      border-color: #10b981;
+    }
+    
+    .checkbox.checked.negative {
+      background: #ef4444;
+      border-color: #ef4444;
+    }
+    
+    .checkbox .check { display: none; color: #fff; font-size: 14px; }
+    .checkbox.checked .check { display: block; }
+    
+    .habit-name {
+      font-size: 15px;
+      font-weight: 500;
+      flex: 1;
+    }
+    
+    .points-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    
+    .points-badge.positive {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+    
+    .points-badge.negative {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+    
+    .primary-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border: none;
+      border-radius: 10px;
+      padding: 16px 24px;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 24px;
+    }
+    
+    .primary-btn:active {
+      transform: scale(0.98);
+    }
+    
+    .primary-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .input-field {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #e2e8f0;
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      width: 100%;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    
+    .input-field:focus {
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .add-form {
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .add-form h3 {
+      margin: 0 0 16px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .toggle-group {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 4px;
+      margin: 12px 0;
+    }
+    
+    .toggle-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #94a3b8;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .toggle-btn.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    
+    .points-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .points-row label {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+    
+    .points-row input {
+      width: 100px;
+    }
+    
+    .edit-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      padding: 8px;
+      margin-left: 8px;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    
+    .edit-btn:active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .edit-btn.delete { color: #ef4444; }
+    
+    .habit-edit-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex: 1;
+    }
+    
+    .habit-edit-row input {
+      font-size: 14px;
+      padding: 8px 12px;
+    }
+    
+    .habit-edit-row .input-field.name { flex: 1; }
+    .habit-edit-row .input-field.points { width: 70px; }
+    
+    .save-btn {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .history-card {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      margin: 10px 0;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .grade-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      margin-right: 16px;
+      flex-shrink: 0;
+    }
+    
+    .history-info { flex: 1; }
+    .history-info .date { margin: 0 0 4px; font-weight: 500; }
+    .history-info .points { margin: 0; color: #64748b; font-size: 13px; }
+    
+    .empty-state {
+      padding: 20px;
+      text-align: center;
+      color: #64748b;
+      font-size: 14px;
+    }
+    
+    .footer {
+      text-align: center;
+      color: #475569;
+      font-size: 12px;
+      margin-top: 32px;
+      padding: 16px;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(16, 185, 129, 0.9);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    
+    /* Auth styles */
+    .auth-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+      text-align: center;
+    }
+    
+    .auth-screen h1 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .auth-screen p {
+      color: #64748b;
+      margin-bottom: 40px;
+      font-size: 16px;
+    }
+    
+    .google-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      color: #333;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .google-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .google-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .user-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #3b82f6;
+    }
+    
+    .user-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .signout-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    
+    .signout-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+    
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .sync-indicator {
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .sync-indicator.syncing { color: #eab308; }
+    .sync-indicator.synced { color: #10b981; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Loading State -->
+    <div id="loadingScreen" class="loading">
+      <div class="spinner"></div>
+    </div>
+    
+    <!-- Auth Screen -->
+    <div id="authScreen" class="auth-screen" style="display: none;">
+      <h1>Day Quality</h1>
+      <p>Track habits. Build streaks. Improve daily.</p>
+      <button class="google-btn" id="googleSignIn">
+        <svg viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Sign in with Google
+      </button>
+    </div>
+    
+    <!-- Main App -->
+    <div id="mainApp" style="display: none;">
+      <div class="header">
+        <h1>Day Quality</h1>
+        <p class="date" id="currentDate"></p>
+      </div>
+      
+      <div class="user-bar">
+        <div class="user-info">
+          <img class="user-avatar" id="userAvatar" src="" alt="">
+          <span class="user-name" id="userName"></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="sync-indicator" id="syncStatus">
+            <span>●</span> Synced
+          </span>
+          <button class="signout-btn" id="signOut">Sign out</button>
+        </div>
+      </div>
+      
+      <nav class="glass-card nav">
+        <button class="nav-btn active" data-view="today">Today</button>
+        <button class="nav-btn" data-view="habits">Habits</button>
+        <button class="nav-btn" data-view="history">History</button>
+      </nav>
+      
+      <!-- Today View -->
+      <div id="todayView" class="view active">
+        <div class="glass-card score-card">
+          <div class="score-ring" id="scoreRing">
+            <span class="score-grade" id="scoreGrade">C</span>
+            <span class="score-points" id="scorePoints">0 pts</span>
+          </div>
+          <p class="score-label" id="scoreLabel">Average</p>
+        </div>
+        
+        <p class="section-title positive">✦ Positive Habits</p>
+        <div id="positiveHabits"></div>
+        
+        <p class="section-title negative">✦ Negative Habits</p>
+        <div id="negativeHabits"></div>
+        
+        <button class="primary-btn" id="saveDay">Save Today's Score</button>
+      </div>
+      
+      <!-- Habits View -->
+      <div id="habitsView" class="view">
+        <div class="glass-card add-form">
+          <h3>Add New Habit</h3>
+          <input type="text" class="input-field" id="newHabitName" placeholder="Habit name...">
+          <div class="toggle-group">
+            <button class="toggle-btn active" data-category="positive">✦ Positive</button>
+            <button class="toggle-btn" data-category="negative">✦ Negative</button>
+          </div>
+          <div class="points-row">
+            <label>Points:</label>
+            <input type="number" class="input-field" id="newHabitPoints" value="10" min="1" max="100">
+          </div>
+          <button class="primary-btn" id="addHabit" style="margin-top: 0;">Add Habit</button>
+        </div>
+        
+        <p class="section-title positive">✦ Positive Habits</p>
+        <div id="editPositiveHabits"></div>
+        
+        <p class="section-title negative">✦ Negative Habits</p>
+        <div id="editNegativeHabits"></div>
+      </div>
+      
+      <!-- History View -->
+      <div id="historyView" class="view">
+        <div class="glass-card empty-state" id="historyEmpty">
+          No days recorded yet. Complete today and save!
+        </div>
+        <div id="historyList"></div>
+      </div>
+      
+      <p class="footer" id="footer"></p>
+    </div>
+  </div>
+  
+  <div class="toast" id="toast">Saved!</div>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCvko-tZWRfvvwo1LA8VSGXDyC132djYrk",
+      authDomain: "day-quality-a196c.firebaseapp.com",
+      projectId: "day-quality-a196c",
+      storageBucket: "day-quality-a196c.firebasestorage.app",
+      messagingSenderId: "189614937120",
+      appId: "1:189614937120:web:591752dbb814486ea71845"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    // Default habits
+    const defaultHabits = [
+      { id: 1, name: 'Morning workout', points: 15, category: 'positive' },
+      { id: 2, name: 'Read 30 minutes', points: 10, category: 'positive' },
+      { id: 3, name: '8 hours sleep', points: 12, category: 'positive' },
+      { id: 4, name: 'Meditate', points: 8, category: 'positive' },
+      { id: 5, name: 'Ate junk food', points: -10, category: 'negative' },
+      { id: 6, name: 'Skipped workout', points: -12, category: 'negative' },
+      { id: 7, name: 'Doom scrolled 1hr+', points: -8, category: 'negative' },
+    ];
+    
+    // State
+    let currentUser = null;
+    let habits = [];
+    let history = [];
+    let todayChecked = {};
+    let newHabitCategory = 'positive';
+    let editingHabitId = null;
+    
+    const todayKey = new Date().toISOString().split('T')[0];
+    
+    // UI Elements
+    const loadingScreen = document.getElementById('loadingScreen');
+    const authScreen = document.getElementById('authScreen');
+    const mainApp = document.getElementById('mainApp');
+    
+    // Helpers
+    const showToast = (message) => {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    };
+    
+    const setSyncStatus = (status) => {
+      const el = document.getElementById('syncStatus');
+      el.className = 'sync-indicator ' + status;
+      el.innerHTML = status === 'syncing' 
+        ? '<span>●</span> Syncing...' 
+        : '<span>●</span> Synced';
+    };
+    
+    const getScoreInfo = (score) => {
+      const maxScore = habits.filter(h => h.points > 0).reduce((s, h) => s + h.points, 0);
+      const minScore = habits.filter(h => h.points < 0).reduce((s, h) => s + h.points, 0);
+      const percentage = maxScore === minScore ? 50 : ((score - minScore) / (maxScore - minScore)) * 100;
+      
+      if (percentage >= 85) return { grade: 'A', color: '#10b981', label: 'Excellent' };
+      if (percentage >= 70) return { grade: 'B', color: '#22c55e', label: 'Good' };
+      if (percentage >= 55) return { grade: 'C', color: '#eab308', label: 'Average' };
+      if (percentage >= 40) return { grade: 'D', color: '#f97316', label: 'Below Average' };
+      return { grade: 'F', color: '#ef4444', label: 'Poor' };
+    };
+    
+    const calculateScore = () => {
+      return Object.entries(todayChecked).reduce((total, [id, checked]) => {
+        if (checked) {
+          const habit = habits.find(h => h.id === parseInt(id));
+          return total + (habit?.points || 0);
+        }
+        return total;
+      }, 0);
+    };
+    
+    // Firebase functions
+    const loadUserData = async () => {
+      if (!currentUser) return;
+      
+      setSyncStatus('syncing');
+      
+      try {
+        // Load habits
+        const habitsDoc = await db.collection('users').doc(currentUser.uid).collection('data').doc('habits').get();
+        if (habitsDoc.exists) {
+          habits = habitsDoc.data().list || defaultHabits;
+        } else {
+          habits = defaultHabits;
+          await saveHabits();
+        }
+        
+        // Load today's checked habits
+        const todayDoc = await db.collection('users').doc(currentUser.uid).collection('days').doc(todayKey).get();
+        if (todayDoc.exists) {
+          todayChecked = todayDoc.data().checked || {};
+        } else {
+          todayChecked = {};
+        }
+        
+        // Load history
+        const historySnapshot = await db.collection('users').doc(currentUser.uid)
+          .collection('days')
+          .orderBy('date', 'desc')
+          .limit(30)
+          .get();
+        
+        history = [];
+        historySnapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.saved) {
+            history.push(data);
+          }
+        });
+        
+        setSyncStatus('synced');
+        renderAll();
+      } catch (error) {
+        console.error('Error loading data:', error);
+        showToast('Error loading data');
+        setSyncStatus('synced');
+      }
+    };
+    
+    const saveHabits = async () => {
+      if (!currentUser) return;
+      setSyncStatus('syncing');
+      try {
+        await db.collection('users').doc(currentUser.uid).collection('data').doc('habits').set({
+          list: habits,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        setSyncStatus('synced');
+      } catch (error) {
+        console.error('Error saving habits:', error);
+        showToast('Error saving');
+      }
+    };
+    
+    const saveTodayChecked = async () => {
+      if (!currentUser) return;
+      setSyncStatus('syncing');
+      try {
+        await db.collection('users').doc(currentUser.uid).collection('days').doc(todayKey).set({
+          date: todayKey,
+          checked: todayChecked,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        setSyncStatus('synced');
+      } catch (error) {
+        console.error('Error saving today:', error);
+      }
+    };
+    
+    const saveDayScore = async () => {
+      if (!currentUser) return;
+      setSyncStatus('syncing');
+      
+      const score = calculateScore();
+      const info = getScoreInfo(score);
+      const today = new Date();
+      const displayDate = today.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+      
+      const dayData = {
+        date: todayKey,
+        displayDate,
+        score,
+        grade: info.grade,
+        checked: todayChecked,
+        saved: true,
+        savedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      try {
+        await db.collection('users').doc(currentUser.uid).collection('days').doc(todayKey).set(dayData);
+        
+        // Update local history
+        history = history.filter(h => h.date !== todayKey);
+        history.unshift({ ...dayData, savedAt: new Date() });
+        
+        setSyncStatus('synced');
+        showToast('Day saved!');
+        renderHistoryView();
+      } catch (error) {
+        console.error('Error saving day:', error);
+        showToast('Error saving');
+      }
+    };
+    
+    // Render functions
+    const renderScore = () => {
+      const score = calculateScore();
+      const info = getScoreInfo(score);
+      const maxScore = habits.filter(h => h.points > 0).reduce((s, h) => s + h.points, 0);
+      const minScore = habits.filter(h => h.points < 0).reduce((s, h) => s + h.points, 0);
+      const progress = maxScore === minScore ? 0 : Math.max(0, ((score - minScore) / (maxScore - minScore)) * 100);
+      
+      document.getElementById('scoreGrade').textContent = info.grade;
+      document.getElementById('scoreGrade').style.color = info.color;
+      document.getElementById('scorePoints').textContent = `${score} pts`;
+      document.getElementById('scoreLabel').textContent = info.label;
+      document.getElementById('scoreLabel').style.color = info.color;
+      
+      const ring = document.getElementById('scoreRing');
+      ring.style.setProperty('--ring-color', info.color);
+      ring.style.setProperty('--progress', `${progress}%`);
+      
+      document.getElementById('footer').textContent = `Score range: ${minScore} to +${maxScore} pts`;
+    };
+    
+    const renderHabitRow = (habit, forEdit = false) => {
+      const isChecked = todayChecked[habit.id];
+      const isNegative = habit.points < 0;
+      const isEditing = editingHabitId === habit.id;
+      
+      if (forEdit && isEditing) {
+        return `
+          <div class="habit-row" style="cursor: default;">
+            <div class="habit-edit-row">
+              <input type="text" class="input-field name" id="editName${habit.id}" value="${habit.name}">
+              <input type="number" class="input-field points" id="editPoints${habit.id}" value="${Math.abs(habit.points)}">
+              <button class="save-btn" onclick="saveHabitEdit(${habit.id}, ${isNegative})">Save</button>
+              <button class="edit-btn delete" onclick="deleteHabit(${habit.id})">🗑</button>
+            </div>
+          </div>
+        `;
+      }
+      
+      if (forEdit) {
+        return `
+          <div class="habit-row" style="cursor: default;">
+            <span class="habit-name">${habit.name}</span>
+            <span class="points-badge ${isNegative ? 'negative' : 'positive'}">${isNegative ? '' : '+'}${habit.points}</span>
+            <button class="edit-btn" onclick="startEditHabit(${habit.id})">✎</button>
+          </div>
+        `;
+      }
+      
+      return `
+        <div class="habit-row ${isChecked ? 'checked' : ''} ${isNegative && isChecked ? 'negative' : ''}" onclick="toggleHabit(${habit.id})">
+          <div class="checkbox ${isChecked ? 'checked' : ''} ${isNegative && isChecked ? 'negative' : ''}">
+            <span class="check">✓</span>
+          </div>
+          <span class="habit-name">${habit.name}</span>
+          <span class="points-badge ${isNegative ? 'negative' : 'positive'}">${isNegative ? '' : '+'}${habit.points}</span>
+        </div>
+      `;
+    };
+    
+    const renderTodayView = () => {
+      const positive = habits.filter(h => h.points > 0);
+      const negative = habits.filter(h => h.points < 0);
+      
+      document.getElementById('positiveHabits').innerHTML = positive.map(h => renderHabitRow(h)).join('');
+      document.getElementById('negativeHabits').innerHTML = negative.map(h => renderHabitRow(h)).join('');
+      renderScore();
+    };
+    
+    const renderHabitsView = () => {
+      const positive = habits.filter(h => h.points > 0);
+      const negative = habits.filter(h => h.points < 0);
+      
+      document.getElementById('editPositiveHabits').innerHTML = positive.map(h => renderHabitRow(h, true)).join('');
+      document.getElementById('editNegativeHabits').innerHTML = negative.map(h => renderHabitRow(h, true)).join('');
+    };
+    
+    const renderHistoryView = () => {
+      const empty = document.getElementById('historyEmpty');
+      const list = document.getElementById('historyList');
+      
+      if (history.length === 0) {
+        empty.style.display = 'block';
+        list.innerHTML = '';
+        return;
+      }
+      
+      empty.style.display = 'none';
+      list.innerHTML = history.map(day => {
+        const info = getScoreInfo(day.score);
+        return `
+          <div class="history-card">
+            <div class="grade-circle" style="background: ${info.color}20; color: ${info.color};">
+              ${day.grade}
+            </div>
+            <div class="history-info">
+              <p class="date">${day.displayDate}</p>
+              <p class="points">${day.score} points</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    };
+    
+    const renderAll = () => {
+      renderTodayView();
+      renderHabitsView();
+      renderHistoryView();
+    };
+    
+    // Actions
+    window.toggleHabit = async (id) => {
+      todayChecked[id] = !todayChecked[id];
+      renderTodayView();
+      await saveTodayChecked();
+    };
+    
+    window.startEditHabit = (id) => {
+      editingHabitId = id;
+      renderHabitsView();
+    };
+    
+    window.saveHabitEdit = async (id, isNegative) => {
+      const name = document.getElementById(`editName${id}`).value.trim();
+      const points = parseInt(document.getElementById(`editPoints${id}`).value) || 1;
+      
+      if (!name) return;
+      
+      habits = habits.map(h => h.id === id ? {
+        ...h,
+        name,
+        points: isNegative ? -Math.abs(points) : Math.abs(points)
+      } : h);
+      
+      editingHabitId = null;
+      renderHabitsView();
+      renderScore();
+      await saveHabits();
+      showToast('Habit updated!');
+    };
+    
+    window.deleteHabit = async (id) => {
+      if (confirm('Delete this habit?')) {
+        habits = habits.filter(h => h.id !== id);
+        delete todayChecked[id];
+        editingHabitId = null;
+        renderHabitsView();
+        renderTodayView();
+        await saveHabits();
+        await saveTodayChecked();
+        showToast('Habit deleted');
+      }
+    };
+    
+    // Event listeners
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`${btn.dataset.view}View`).classList.add('active');
+        
+        if (btn.dataset.view === 'habits') renderHabitsView();
+        if (btn.dataset.view === 'history') renderHistoryView();
+      });
+    });
+    
+    document.querySelectorAll('.toggle-btn[data-category]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.toggle-btn[data-category]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        newHabitCategory = btn.dataset.category;
+      });
+    });
+    
+    document.getElementById('addHabit').addEventListener('click', async () => {
+      const name = document.getElementById('newHabitName').value.trim();
+      const points = parseInt(document.getElementById('newHabitPoints').value) || 10;
+      
+      if (!name) {
+        showToast('Enter a habit name');
+        return;
+      }
+      
+      const newHabit = {
+        id: Date.now(),
+        name,
+        points: newHabitCategory === 'negative' ? -Math.abs(points) : Math.abs(points),
+        category: newHabitCategory
+      };
+      
+      habits.push(newHabit);
+      
+      document.getElementById('newHabitName').value = '';
+      document.getElementById('newHabitPoints').value = '10';
+      
+      renderHabitsView();
+      renderTodayView();
+      await saveHabits();
+      showToast('Habit added!');
+    });
+    
+    document.getElementById('saveDay').addEventListener('click', saveDayScore);
+    
+    // Auth
+    document.getElementById('googleSignIn').addEventListener('click', async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        await auth.signInWithPopup(provider);
+      } catch (error) {
+        console.error('Sign in error:', error);
+        showToast('Sign in failed');
+      }
+    });
+    
+    document.getElementById('signOut').addEventListener('click', async () => {
+      await auth.signOut();
+    });
+    
+    // Auth state listener
+    auth.onAuthStateChanged(async (user) => {
+      loadingScreen.style.display = 'none';
+      
+      if (user) {
+        currentUser = user;
+        document.getElementById('userName').textContent = user.displayName || 'User';
+        document.getElementById('userAvatar').src = user.photoURL || '';
+        
+        authScreen.style.display = 'none';
+        mainApp.style.display = 'block';
+        
+        await loadUserData();
+      } else {
+        currentUser = null;
+        authScreen.style.display = 'flex';
+        mainApp.style.display = 'none';
+      }
+    });
+    
+    // Init date
+    const today = new Date();
+    document.getElementById('currentDate').textContent = today.toLocaleDateString('en-US', { 
+      weekday: 'long', month: 'short', day: 'numeric' 
+    });
+  </script>
+</body>
+</html>
