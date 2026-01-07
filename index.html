@@ -465,6 +465,61 @@
     .history-info .date { margin: 0 0 4px; font-weight: 500; }
     .history-info .points { margin: 0; color: #64748b; font-size: 13px; }
     
+    .history-card-wrapper {
+      margin: 10px 0;
+    }
+    
+    .history-card {
+      cursor: pointer;
+    }
+    
+    .history-expand-icon {
+      color: #64748b;
+      font-size: 12px;
+      margin-left: 12px;
+      transition: transform 0.2s ease;
+    }
+    
+    .history-details {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      padding: 12px 16px;
+      margin-top: -10px;
+    }
+    
+    .history-habit-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 14px;
+    }
+    
+    .history-habit-item:last-child {
+      border-bottom: none;
+    }
+    
+    .history-habit-name {
+      color: #e2e8f0;
+    }
+    
+    .history-habit-points {
+      font-family: 'Space Mono', monospace;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    
+    .history-habit-item.positive .history-habit-points {
+      color: #34d399;
+    }
+    
+    .history-habit-item.negative .history-habit-points {
+      color: #f87171;
+    }
+    
     .empty-state {
       padding: 20px;
       text-align: center;
@@ -866,7 +921,8 @@
         <p class="section-title negative">✦ Negative Habits</p>
         <div id="negativeHabits"></div>
         
-        <button class="primary-btn" id="saveDay">Save Today's Score</button>
+        <button class="primary-btn" id="saveDay">Save Entry</button>
+        <button class="secondary-btn" id="clearAll" style="margin-top: 12px;">Clear All</button>
       </div>
       
       <!-- Habits View -->
@@ -1137,7 +1193,7 @@
         history.unshift({ ...dayData, savedAt: new Date() });
         
         setSyncStatus('synced');
-        showToast('Day saved!');
+        showToast('Entry saved!');
         renderHistoryView();
       } catch (error) {
         console.error('Error saving day:', error);
@@ -1253,16 +1309,50 @@
       if (history.length === 0) {
         list.innerHTML = '<div class="empty-state">No days recorded yet. Add a past day or save today\'s score!</div>';
       } else {
-        list.innerHTML = history.map(day => {
+        list.innerHTML = history.map((day, idx) => {
           const info = getScoreInfo(day.score);
+          
+          // Build habit details
+          let habitDetails = '';
+          if (day.checked) {
+            const checkedHabits = Object.entries(day.checked)
+              .filter(([id, count]) => count > 0)
+              .map(([id, count]) => {
+                const habit = habits.find(h => h.id === parseInt(id));
+                if (!habit) return null;
+                const points = habit.points * count;
+                return { name: habit.name, count, points, isNegative: habit.points < 0 };
+              })
+              .filter(h => h !== null);
+            
+            if (checkedHabits.length > 0) {
+              habitDetails = checkedHabits.map(h => `
+                <div class="history-habit-item ${h.isNegative ? 'negative' : 'positive'}">
+                  <span class="history-habit-name">${h.count > 1 ? h.count + '× ' : ''}${h.name}</span>
+                  <span class="history-habit-points">${h.points > 0 ? '+' : ''}${h.points}</span>
+                </div>
+              `).join('');
+            } else {
+              habitDetails = '<div class="history-habit-item" style="color: #64748b;">No habits recorded</div>';
+            }
+          } else {
+            habitDetails = '<div class="history-habit-item" style="color: #64748b;">No details available</div>';
+          }
+          
           return `
-            <div class="history-card">
-              <div class="grade-circle" style="background: ${info.color}20; color: ${info.color};">
-                ${day.grade}
+            <div class="history-card-wrapper">
+              <div class="history-card" onclick="toggleHistoryDetails(${idx})">
+                <div class="grade-circle" style="background: ${info.color}20; color: ${info.color};">
+                  ${day.grade}
+                </div>
+                <div class="history-info">
+                  <p class="date">${day.displayDate}</p>
+                  <p class="points">${day.score} points</p>
+                </div>
+                <div class="history-expand-icon" id="expandIcon${idx}">▼</div>
               </div>
-              <div class="history-info">
-                <p class="date">${day.displayDate}</p>
-                <p class="points">${day.score} points</p>
+              <div class="history-details" id="historyDetails${idx}" style="display: none;">
+                ${habitDetails}
               </div>
             </div>
           `;
@@ -1476,6 +1566,18 @@
       }
     };
     
+    window.toggleHistoryDetails = (idx) => {
+      const details = document.getElementById(`historyDetails${idx}`);
+      const icon = document.getElementById(`expandIcon${idx}`);
+      if (details.style.display === 'none') {
+        details.style.display = 'block';
+        icon.textContent = '▲';
+      } else {
+        details.style.display = 'none';
+        icon.textContent = '▼';
+      }
+    };
+    
     const savePastDayScore = async () => {
       if (!currentUser) return;
       
@@ -1686,6 +1788,15 @@
     });
     
     document.getElementById('saveDay').addEventListener('click', saveDayScore);
+    
+    document.getElementById('clearAll').addEventListener('click', async () => {
+      if (confirm('Clear all habits for today?')) {
+        todayChecked = {};
+        renderTodayView();
+        await saveTodayChecked();
+        showToast('Cleared!');
+      }
+    });
     
     // History view toggle (list/chart/add)
     document.querySelectorAll('.toggle-btn[data-historyview]').forEach(btn => {
