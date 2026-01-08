@@ -1311,6 +1311,18 @@
         return;
       }
       
+      // Deduplicate history by date (keep most recent entry for each date)
+      const uniqueHistory = [];
+      const seenDates = new Set();
+      for (const day of history) {
+        const dateKey = day.date.split('T')[0]; // Normalize date format
+        if (!seenDates.has(dateKey)) {
+          seenDates.add(dateKey);
+          uniqueHistory.push({ ...day, date: dateKey });
+        }
+      }
+      history = uniqueHistory;
+      
       if (history.length === 0) {
         list.innerHTML = '<div class="empty-state">No days recorded yet. Add a past day or save today\'s score!</div>';
       } else {
