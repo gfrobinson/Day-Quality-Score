@@ -1120,9 +1120,11 @@
           .get();
         
         history = [];
+        const seenDates = new Set();
         historySnapshot.forEach(doc => {
           const data = doc.data();
-          if (data.saved) {
+          if (data.saved && !seenDates.has(data.date)) {
+            seenDates.add(data.date);
             history.push(data);
           }
         });
@@ -1188,9 +1190,12 @@
       try {
         await db.collection('users').doc(currentUser.uid).collection('days').doc(todayKey).set(dayData);
         
-        // Update local history
-        history = history.filter(h => h.date !== todayKey);
+        // Update local history - remove any existing entry for today
+        history = history.filter(h => String(h.date) !== String(todayKey));
         history.unshift({ ...dayData, savedAt: new Date() });
+        
+        // Sort by date descending
+        history.sort((a, b) => b.date.localeCompare(a.date));
         
         setSyncStatus('synced');
         showToast('Entry saved!');
